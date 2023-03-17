@@ -1,4 +1,6 @@
 import { Stack, Flex, Text, Input } from "@chakra-ui/react";
+import { useEffect } from "react";
+import localforage from "localforage";
 import { BsSearch, BsThreeDotsVertical } from "react-icons/bs";
 import { FiPower, FiHardDrive } from "react-icons/fi";
 import { BiSliderAlt } from "react-icons/bi";
@@ -8,7 +10,39 @@ import { useGlobalContext } from "../../lib/context";
 const HomeTopBar = () => {
   // State
   // @ts-ignore
-  const { interfaceHook } = useGlobalContext();
+  const { interfaceHook, libraryHook } = useGlobalContext();
+
+  // Functions
+  const extractFilesFromFolder = async () => {
+    if (libraryHook?.directory) {
+      const files = [];
+      for await (const entry of libraryHook?.directory.entries()) {
+        // Add a .md regex match condition, epubs/mobi
+        if (entry[1].kind === "file") {
+          files.push(entry);
+        }
+      }
+      // TODO: Extract metadata from epub/mobi's, and construct book objects to store
+      libraryHook?.setContents(files);
+    } else {
+      libraryHook?.setContents([]);
+    }
+  };
+
+  useEffect(() => {
+    extractFilesFromFolder();
+  }, [libraryHook?.directory]);
+
+  const getFolder = async () => {
+    // @ts-ignore
+    const dirHandle = await window.showDirectoryPicker();
+    // Get 'boards' folder
+    // const boardHandle = await dirHandle.getDirectoryHandle("boards", {
+    //   create: true,
+    // });
+    libraryHook?.setDirectory(dirHandle);
+    localforage.setItem("directory", dirHandle);
+  };
 
   // TSX
   return (
@@ -58,7 +92,7 @@ const HomeTopBar = () => {
         <Text
           _hover={{ color: "gray", cursor: "pointer" }}
           onClick={() => {
-            alert("Clicked library");
+            getFolder();
           }}
         >
           <FiHardDrive />

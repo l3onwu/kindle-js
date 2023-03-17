@@ -1,6 +1,17 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { useGlobalContext } from "../../lib/context";
+import { BookType } from "../../lib/useLibrarySettings";
 
 const HomeLibrary = () => {
+  // State
+  //@ts-ignore
+  const { libraryHook } = useGlobalContext();
+  useEffect(() => {
+    libraryHook?.setFirstLoad(false);
+  }, []);
+
+  // TSX
   return (
     <Box
       p="15px"
@@ -12,25 +23,32 @@ const HomeLibrary = () => {
       className="kindle-library-scrollbar"
     >
       <Flex wrap="wrap">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((book) => {
-          return <BookTile key={book} />;
+        {libraryHook?.contents?.map((book: any, index: any) => {
+          return <BookTile key={index} book={book} />;
         })}
       </Flex>
     </Box>
   );
 };
 
-const BookTile = () => {
-  return (
-    <Box
-      width="92px"
-      height="120px"
-      bgColor="transparent"
-      border="1px solid gray"
-      mr="10px"
-      mb="10px"
-    ></Box>
-  );
-};
+const BookTile = ({ book }: { book: any }) =>
+  // : { book: BookType }
+  {
+    return (
+      <Box
+        width="92px"
+        height="120px"
+        bgColor="transparent"
+        border="1px solid gray"
+        mr="10px"
+        mb="10px"
+        overflow="scroll"
+      >
+        <Text fontSize="11" fontWeight="bold">
+          {book[0]}
+        </Text>
+      </Box>
+    );
+  };
 
 export default HomeLibrary;
